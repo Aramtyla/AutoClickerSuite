@@ -13,6 +13,14 @@
 
 ---
 
+## 📥 Скачать
+
+> **[⬇️ Скачать AutoClicker Suite v2.0.0 (установщик, Windows x64)](https://github.com/Aramtyla/AutoClickerSuite/releases/download/v2.0.0/AutoClickerSuite-2.0.0-setup-win64.exe)**
+>
+> Портативная версия (ZIP): **[AutoClickerSuite-2.0.0-portable-win64.zip](https://github.com/Aramtyla/AutoClickerSuite/releases/download/v2.0.0/AutoClickerSuite-2.0.0-portable-win64.zip)**
+
+---
+
 ## 📋 Возможности
 
 ### 🖱️ Модуль мыши

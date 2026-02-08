@@ -13,14 +13,14 @@
 ; ==========================================
 !define APP_NAME        "AutoClicker Suite"
 !define APP_EXE         "AutoClickerSuite.exe"
-!define APP_VERSION     "1.0.0"
+!define APP_VERSION     "2.0.0"
 !define APP_PUBLISHER   "AutoClickerSuite Team"
 !define APP_URL         "https://github.com/Aramtyla/AutoClickerSuite"
 !define APP_GUID        "{A1C2E3F4-5678-9ABC-DEF0-123456789ABC}"
 
 ; Каталог со скомпилированными файлами (передаётся через /D или по умолчанию)
 !ifndef BUILD_DIR
-    !define BUILD_DIR "..\dist\AutoClickerSuite-${APP_VERSION}-portable-win64"
+    !define BUILD_DIR "..\build\Release"
 !endif
 
 ; ==========================================
