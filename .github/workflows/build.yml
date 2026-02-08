@@ -1,0 +1,143 @@
+# ===========================================
+# GitHub Actions — CI/CD для AutoClicker Suite
+# ===========================================
+# Собирает проект при push в main и pull request
+# Создаёт Release при пуше тега vX.X.X
+
+name: Build & Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  BUILD_TYPE: Release
+  QT_VERSION: '6.8.2'
+
+jobs:
+  # ==========================================
+  # Сборка Windows (MSVC)
+  # ==========================================
+  build-windows:
+    name: Windows (MSVC x64)
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Qt6
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: windows
+        target: desktop
+        arch: win64_msvc2022_64
+        modules: 'qtnetworkauth'
+        cache: true
+
+    - name: Configure CMake
+      run: |
+        cmake -S . -B build `
+          -G "Visual Studio 17 2022" -A x64 `
+          -DPORTABLE_MODE=ON `
+          -DCMAKE_PREFIX_PATH="${{ env.Qt6_DIR }}"
+
+    - name: Build
+      run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+    # windeployqt выполняется автоматически как post-build шаг в CMakeLists.txt
+
+    - name: Prepare portable package
+      run: |
+        $version = (Select-String -Path CMakeLists.txt -Pattern 'project\(AutoClickerSuite VERSION (\S+)' | ForEach-Object { $_.Matches[0].Groups[1].Value })
+        $buildOutput = "build/${{ env.BUILD_TYPE }}"
+        $packageDir = "dist/AutoClickerSuite-$version-portable-win64"
+        New-Item -ItemType Directory -Path $packageDir -Force
+
+        # Копируем exe и DLL (windeployqt уже скопировал Qt DLL рядом с exe)
+        Copy-Item "$buildOutput/AutoClickerSuite.exe" $packageDir/
+        Copy-Item "$buildOutput/*.dll" $packageDir/ -ErrorAction SilentlyContinue
+
+        # Копируем плагины Qt
+        foreach ($dir in @("platforms", "styles", "imageformats", "iconengines", "tls", "networkinformation", "generic")) {
+          if (Test-Path "$buildOutput/$dir") {
+            Copy-Item "$buildOutput/$dir" "$packageDir/$dir" -Recurse
+          }
+        }
+
+        # Копируем переводы
+        if (Test-Path "$buildOutput/translations") {
+          Copy-Item "$buildOutput/translations" "$packageDir/translations" -Recurse
+        }
+
+        # Копируем документацию
+        Copy-Item README.md, LICENSE, CHANGELOG.md $packageDir/ -ErrorAction SilentlyContinue
+
+        # Создаём ZIP
+        Compress-Archive -Path "$packageDir/*" -DestinationPath "dist/AutoClickerSuite-$version-portable-win64.zip" -Force
+
+        echo "RELEASE_VERSION=$version" >> $env:GITHUB_ENV
+        echo "PACKAGE_DIR=$packageDir" >> $env:GITHUB_ENV
+
+    - name: Upload portable artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoClickerSuite-portable-win64
+        path: dist/AutoClickerSuite-*-portable-win64.zip
+
+    # ==========================================
+    # NSIS-установщик (только для тегов)
+    # ==========================================
+    - name: Install NSIS
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: choco install nsis -y
+
+    - name: Build NSIS installer
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        Push-Location installer
+        & "C:\Program Files (x86)\NSIS\makensis.exe" `
+          /DBUILD_DIR="..\$env:PACKAGE_DIR" `
+          installer.nsi
+        Pop-Location
+
+    - name: Upload installer artifact
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: actions/upload-artifact@v4
+      with:
+        name: AutoClickerSuite-installer-win64
+        path: dist/AutoClickerSuite-*-setup-win64.exe
+
+  # ==========================================
+  # Создание GitHub Release
+  # ==========================================
+  release:
+    name: Create Release
+    needs: build-windows
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        name: "AutoClicker Suite ${{ github.ref_name }}"
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+        files: |
+          artifacts/AutoClickerSuite-portable-win64/*.zip
+          artifacts/AutoClickerSuite-installer-win64/*.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

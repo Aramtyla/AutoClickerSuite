@@ -1,0 +1,13 @@
+// ===========================================
+// version.h — Автогенерируемый файл версии
+// ===========================================
+// НЕ РЕДАКТИРОВАТЬ ВРУЧНУЮ!
+// Генерируется CMake из version.h.in
+
+#pragma once
+
+#define APP_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define APP_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define APP_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define APP_VERSION_STRING "@PROJECT_VERSION@"
+#define APP_BUILD_DATE "@BUILD_DATE@"

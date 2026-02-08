@@ -1,0 +1,58 @@
+# ===========================================
+# .gitignore — AutoClicker Suite
+# ===========================================
+
+# Каталоги сборки
+build/
+cmake-build-*/
+out/
+dist/
+.vs/
+.vscode/
+
+# Сгенерированные файлы
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.a
+*.pdb
+*.ilk
+*.exp
+*.log
+*.user
+*.suo
+*.sdf
+*.opensdf
+*.db
+*.opendb
+
+# Файлы автогенерации Qt
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+*.qm
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CPackConfig.cmake
+CPackSourceConfig.cmake
+_CPack_Packages/
+install_manifest.txt
+Makefile
+
+# IDE
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+*.code-workspace
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini

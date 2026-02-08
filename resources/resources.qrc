@@ -1,0 +1,15 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+        <!-- Темы -->
+        <file alias="themes/dark.qss">themes/dark.qss</file>
+        <file alias="themes/light.qss">themes/light.qss</file>
+
+        <!-- Иконки -->
+        <file alias="icons/app.png">icons/app.png</file>
+        <file alias="icons/mouse.png">icons/mouse.png</file>
+        <file alias="icons/keyboard.png">icons/keyboard.png</file>
+        <file alias="icons/macro.png">icons/macro.png</file>
+        <file alias="icons/smart.png">icons/smart.png</file>
+    </qresource>
+</RCC>
