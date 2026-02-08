@@ -1,8 +1,10 @@
 ; ===========================================
 ; installer.nsi — NSIS-установщик AutoClicker Suite
 ; ===========================================
-; Для сборки: makensis installer.nsi
+; Для сборки: makensis /INPUTCHARSET UTF8 installer.nsi
 ; Требуется: NSIS 3.x + плагины (включены по умолчанию)
+
+Unicode true
 
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
