@@ -171,7 +171,7 @@ void MouseWidget::setupPositionGroup()
     m_fixedYSpin->setEnabled(false);
     coordLayout->addWidget(m_fixedYSpin);
 
-    m_pickPosButton = new QPushButton(tr("📍 Захватить"));
+    m_pickPosButton = new QPushButton(tr("Захватить"));
     m_pickPosButton->setToolTip(tr("Нажмите, затем кликните мышью для захвата координат (5 сек)"));
     m_pickPosButton->setEnabled(false);
     coordLayout->addWidget(m_pickPosButton);
@@ -318,12 +318,12 @@ void MouseWidget::setupControlGroup()
     // Кнопки Старт/Стоп
     auto* btnLayout = new QHBoxLayout();
 
-    m_startButton = new QPushButton(tr("▶ Старт"));
+    m_startButton = new QPushButton(tr("Старт"));
     m_startButton->setObjectName("startButton");
     m_startButton->setMinimumHeight(40);
     m_startButton->setToolTip(tr("Начать автоклик (F6)"));
 
-    m_stopButton = new QPushButton(tr("⏹ Стоп"));
+    m_stopButton = new QPushButton(tr("Стоп"));
     m_stopButton->setObjectName("stopButton");
     m_stopButton->setMinimumHeight(40);
     m_stopButton->setEnabled(false);
@@ -334,7 +334,7 @@ void MouseWidget::setupControlGroup()
     layout->addLayout(btnLayout);
 
     // Статус
-    m_statusLabel = new QLabel(tr("⏸ Остановлен"));
+    m_statusLabel = new QLabel(tr("Остановлен"));
     m_statusLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setStyleSheet("font-size: 11pt; font-weight: bold; padding: 4px;");
     layout->addWidget(m_statusLabel);
@@ -354,7 +354,7 @@ void MouseWidget::setupControlGroup()
     layout->addLayout(statsLayout);
 
     // Подсказка по хоткею
-    auto* hotkeyHint = new QLabel(tr("💡 Горячая клавиша: F6 — Старт/Стоп"));
+    auto* hotkeyHint = new QLabel(tr("Горячая клавиша: F6 — Старт/Стоп"));
     hotkeyHint->setStyleSheet("color: gray; font-size: 9pt; padding-top: 6px;");
     hotkeyHint->setWordWrap(true);
     layout->addWidget(hotkeyHint);
@@ -475,7 +475,7 @@ void MouseWidget::onClickerStarted()
 {
     m_startButton->setEnabled(false);
     m_stopButton->setEnabled(true);
-    m_statusLabel->setText(tr("🟢 Активен"));
+    m_statusLabel->setText(tr("Активен"));
     m_statusLabel->setStyleSheet("font-size: 11pt; font-weight: bold; color: #a6e3a1; padding: 4px;");
 
     // Блокируем настройки во время работы
@@ -489,7 +489,7 @@ void MouseWidget::onClickerStopped()
 {
     m_startButton->setEnabled(true);
     m_stopButton->setEnabled(false);
-    m_statusLabel->setText(tr("⏸ Остановлен"));
+    m_statusLabel->setText(tr("Остановлен"));
     m_statusLabel->setStyleSheet("font-size: 11pt; font-weight: bold; padding: 4px;");
 
     // Разблокируем настройки
@@ -501,7 +501,7 @@ void MouseWidget::onClickerStopped()
 
 void MouseWidget::onClickerFinished()
 {
-    m_statusLabel->setText(tr("✅ Завершён (лимит достигнут)"));
+    m_statusLabel->setText(tr("Завершён (лимит достигнут)"));
     m_statusLabel->setStyleSheet("font-size: 11pt; font-weight: bold; color: #89b4fa; padding: 4px;");
     LOG_INFO(tr("Автоклик завершён по лимиту"));
 }
@@ -526,7 +526,7 @@ void MouseWidget::onStatsUpdated(qint64 clicks, qint64 elapsedMs)
 
 void MouseWidget::onPickPosition()
 {
-    m_pickPosButton->setText(tr("⏳ Кликните мышью..."));
+    m_pickPosButton->setText(tr("Кликните мышью..."));
     m_pickPosButton->setEnabled(false);
     m_pickingPosition = true;
 
@@ -541,7 +541,7 @@ void MouseWidget::onPickPosition()
                 LOG_INFO(tr("Координаты захвачены: (%1, %2)").arg(pt.x).arg(pt.y));
             }
 #endif
-            m_pickPosButton->setText(tr("📍 Захватить"));
+            m_pickPosButton->setText(tr("Захватить"));
             m_pickPosButton->setEnabled(true);
             m_pickingPosition = false;
         }

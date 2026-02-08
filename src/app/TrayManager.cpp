@@ -40,13 +40,13 @@ void TrayManager::setupContextMenu(QWidget* parentWindow)
     m_trayMenu->addSeparator();
 
     // Горячие действия
-    QAction* startStopAction = m_trayMenu->addAction(tr("▶ Старт/Стоп (F6)"));
+    QAction* startStopAction = m_trayMenu->addAction(tr("Старт/Стоп (F6)"));
     connect(startStopAction, &QAction::triggered, this, &TrayManager::startStopTriggered);
 
-    QAction* recordAction = m_trayMenu->addAction(tr("⏺ Запись макроса (F7)"));
+    QAction* recordAction = m_trayMenu->addAction(tr("Запись макроса (F7)"));
     connect(recordAction, &QAction::triggered, this, &TrayManager::recordMacroTriggered);
 
-    QAction* emergencyAction = m_trayMenu->addAction(tr("⛔ Остановить всё (F8)"));
+    QAction* emergencyAction = m_trayMenu->addAction(tr("Остановить всё (F8)"));
     connect(emergencyAction, &QAction::triggered, this, &TrayManager::emergencyStopTriggered);
 
     m_trayMenu->addSeparator();
@@ -76,4 +76,16 @@ void TrayManager::showMessage(const QString& title, const QString& message,
 bool TrayManager::isVisible() const
 {
     return m_trayIcon && m_trayIcon->isVisible();
+}
+
+void TrayManager::retranslateUi()
+{
+    // Удаляем старое меню и создаём заново с новым языком
+    if (m_trayMenu) {
+        delete m_trayMenu;
+        m_trayMenu = nullptr;
+    }
+    auto* parentWidget = qobject_cast<QWidget*>(parent());
+    setupContextMenu(parentWidget);
+    m_trayIcon->setToolTip(tr("AutoClicker Suite"));
 }

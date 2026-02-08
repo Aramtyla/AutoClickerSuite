@@ -26,6 +26,7 @@ class MouseWidget;
 class KeyboardWidget;
 class MacroWidget;
 class SmartWidget;
+class SettingsWidget;
 
 class MainWindow : public QMainWindow
 {
@@ -37,6 +38,7 @@ public:
 
 protected:
     // Перехват закрытия — сворачиваем в трей вместо выхода
+    void changeEvent(QEvent* event) override;
     void closeEvent(QCloseEvent* event) override;
 
 private slots:
@@ -46,6 +48,7 @@ private slots:
     void onAbout();
     void onLoadProfile();
     void onSaveProfile();
+    void onOpenSettings();
 
     // Обновление лога в реальном времени
     void onLogMessage(const QString& message, LogLevel level);

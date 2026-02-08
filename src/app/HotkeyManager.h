@@ -45,6 +45,7 @@ signals:
     void startStopTriggered();
     void recordMacroTriggered();
     void emergencyStopTriggered();
+    void exitAppTriggered();
 
 private:
     QMap<int, QPair<UINT, UINT>> m_registered;  // id -> (modifiers, vk)

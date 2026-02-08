@@ -8,6 +8,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QFile>
 
 LanguageManager::LanguageManager(QObject* parent)
     : QObject(parent)
@@ -22,41 +23,47 @@ void LanguageManager::setLanguage(AppLanguage lang)
     // Удаляем старый переводчик
     QCoreApplication::removeTranslator(&m_translator);
 
+    // Для русского языка переводчик не нужен — исходные строки уже на русском
+    if (lang == AppLanguage::Russian) {
+        // Сохраняем выбор
+        Settings::instance().setValue("appearance/language", "ru");
+        emit languageChanged(lang);
+        return;
+    }
+
     // Определяем имя файла перевода
-    QString baseName;
-    switch (lang) {
-        case AppLanguage::Russian:
-            baseName = "app_ru";
-            break;
-        case AppLanguage::English:
-            baseName = "app_en";
-            break;
-    }
+    QString baseName = "app_en";
 
-    // Пробуем загрузить из файловой системы (рядом с exe)
-    QString fsPath = QCoreApplication::applicationDirPath() + "/translations/" + baseName + ".qm";
-    bool loaded = false;
+    // Пробуем загрузить из ресурсов Qt (встроенные в бинарник)
+    bool loaded = m_translator.load(":/translations/" + baseName + ".qm");
 
-    if (QFile::exists(fsPath)) {
-        loaded = m_translator.load(fsPath);
-    }
-
-    // Фоллбэк — из ресурсов Qt
+    // Фоллбэк — из файловой системы (рядом с exe)
     if (!loaded) {
-        loaded = m_translator.load(":/translations/" + baseName + ".qm");
+        QString fsPath = QCoreApplication::applicationDirPath() + "/translations/" + baseName + ".qm";
+        if (QFile::exists(fsPath)) {
+            loaded = m_translator.load(fsPath);
+        }
+    }
+
+    // Ещё один фоллбэк — из build-каталога (для отладки)
+    if (!loaded) {
+        loaded = m_translator.load(QCoreApplication::applicationDirPath() + "/" + baseName + ".qm");
+    }
+
+    // Фоллбэк — на уровень выше (если exe в подпапке Release/Debug)
+    if (!loaded) {
+        loaded = m_translator.load(QCoreApplication::applicationDirPath() + "/../" + baseName + ".qm");
     }
 
     if (loaded) {
         QCoreApplication::installTranslator(&m_translator);
         LOG_DEBUG(tr("Файл перевода загружен: %1").arg(baseName));
     } else {
-        LOG_DEBUG(tr("Файл перевода не найден: %1 (используются встроенные строки)")
-                      .arg(baseName));
+        LOG_WARNING(tr("Файл перевода не найден: %1 (используются встроенные строки)").arg(baseName));
     }
 
     // Сохраняем выбор
-    Settings::instance().setValue("appearance/language",
-                                  lang == AppLanguage::Russian ? "ru" : "en");
+    Settings::instance().setValue("appearance/language", "en");
 
     emit languageChanged(lang);
 }

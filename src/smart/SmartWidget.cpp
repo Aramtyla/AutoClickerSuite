@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QHeaderView>
 #include <QScrollArea>
+#include <QTabBar>
 #include <QPixmap>
 #include <QScreen>
 #include <QGuiApplication>
@@ -74,32 +75,37 @@ void SmartWidget::setupUI()
     mainLayout->setContentsMargins(4, 4, 4, 4);
 
     m_subTabs = new QTabWidget(this);
-    m_subTabs->setTabPosition(QTabWidget::West);
+    m_subTabs->setTabPosition(QTabWidget::North);
+    m_subTabs->setDocumentMode(true);
+    m_subTabs->setIconSize(QSize(18, 18));
+    m_subTabs->setElideMode(Qt::ElideNone);
+    m_subTabs->tabBar()->setExpanding(false);
+    m_subTabs->setUsesScrollButtons(true);
 
     // Подвкладка 1 — Привязка к окну
     auto* windowTab = new QWidget();
     setupWindowBindingTab(windowTab);
-    m_subTabs->addTab(windowTab, tr("🪟 Окно"));
+    m_subTabs->addTab(windowTab, QIcon(":/icons/tab_window.svg"), tr("Окно"));
 
     // Подвкладка 2 — Клик по цвету
     auto* colorTab = new QWidget();
     setupColorMatchTab(colorTab);
-    m_subTabs->addTab(colorTab, tr("🎨 Цвет"));
+    m_subTabs->addTab(colorTab, QIcon(":/icons/tab_color.svg"), tr("Цвет"));
 
     // Подвкладка 3 — Клик по изображению
     auto* imageTab = new QWidget();
     setupImageMatchTab(imageTab);
-    m_subTabs->addTab(imageTab, tr("🖼 Изображение"));
+    m_subTabs->addTab(imageTab, QIcon(":/icons/tab_image.svg"), tr("Изображение"));
 
     // Подвкладка 4 — Планировщик
     auto* schedTab = new QWidget();
     setupSchedulerTab(schedTab);
-    m_subTabs->addTab(schedTab, tr("⏰ Планировщик"));
+    m_subTabs->addTab(schedTab, QIcon(":/icons/tab_scheduler.svg"), tr("Планировщик"));
 
     // Подвкладка 5 — Профили
     auto* profileTab = new QWidget();
     setupProfilesTab(profileTab);
-    m_subTabs->addTab(profileTab, tr("📁 Профили"));
+    m_subTabs->addTab(profileTab, QIcon(":/icons/tab_profiles.svg"), tr("Профили"));
 
     mainLayout->addWidget(m_subTabs);
 }
@@ -130,12 +136,12 @@ void SmartWidget::setupWindowBindingTab(QWidget* tab)
     m_windowCombo->setPlaceholderText(tr("Выберите окно..."));
     selectLayout->addWidget(m_windowCombo);
 
-    m_refreshBtn = new QPushButton(tr("🔄"), m_bindGroup);
+    m_refreshBtn = new QPushButton(tr("Обновить"), m_bindGroup);
     m_refreshBtn->setToolTip(tr("Обновить список окон"));
     m_refreshBtn->setFixedWidth(40);
     selectLayout->addWidget(m_refreshBtn);
 
-    m_pickWindowBtn = new QPushButton(tr("🎯 Выбрать кликом"), m_bindGroup);
+    m_pickWindowBtn = new QPushButton(tr("Выбрать кликом"), m_bindGroup);
     m_pickWindowBtn->setToolTip(tr("Кликните по нужному окну"));
     selectLayout->addWidget(m_pickWindowBtn);
     bindLayout->addLayout(selectLayout);
@@ -192,7 +198,7 @@ void SmartWidget::setupColorMatchTab(QWidget* tab)
 
     // Выбор цвета
     auto* colorSelectLayout = new QHBoxLayout();
-    m_pickColorBtn = new QPushButton(tr("🎨 Выбрать цвет..."), m_colorGroup);
+    m_pickColorBtn = new QPushButton(tr("Выбрать цвет..."), m_colorGroup);
     colorSelectLayout->addWidget(m_pickColorBtn);
 
     m_colorPreview = new QLabel(m_colorGroup);
@@ -297,11 +303,11 @@ void SmartWidget::setupColorMatchTab(QWidget* tab)
 
     // Управление
     auto* ctrlLayout = new QHBoxLayout();
-    m_colorStartBtn = new QPushButton(tr("▶ Старт"), m_colorGroup);
+    m_colorStartBtn = new QPushButton(tr("Старт"), m_colorGroup);
     m_colorStartBtn->setObjectName("startButton");
     ctrlLayout->addWidget(m_colorStartBtn);
 
-    m_colorStopBtn = new QPushButton(tr("⏹ Стоп"), m_colorGroup);
+    m_colorStopBtn = new QPushButton(tr("Стоп"), m_colorGroup);
     m_colorStopBtn->setObjectName("stopButton");
     m_colorStopBtn->setEnabled(false);
     ctrlLayout->addWidget(m_colorStopBtn);
@@ -336,7 +342,7 @@ void SmartWidget::setupImageMatchTab(QWidget* tab)
 
     // Загрузка шаблона
     auto* templLayout = new QHBoxLayout();
-    m_loadTemplateBtn = new QPushButton(tr("📂 Загрузить шаблон..."), m_imageGroup);
+    m_loadTemplateBtn = new QPushButton(tr("Загрузить шаблон..."), m_imageGroup);
     templLayout->addWidget(m_loadTemplateBtn);
 
     m_templateInfoLabel = new QLabel(tr("Шаблон не загружен"), m_imageGroup);
@@ -394,11 +400,11 @@ void SmartWidget::setupImageMatchTab(QWidget* tab)
 
     // Управление
     auto* ctrlLayout = new QHBoxLayout();
-    m_imageStartBtn = new QPushButton(tr("▶ Старт"), m_imageGroup);
+    m_imageStartBtn = new QPushButton(tr("Старт"), m_imageGroup);
     m_imageStartBtn->setObjectName("startButton");
     ctrlLayout->addWidget(m_imageStartBtn);
 
-    m_imageStopBtn = new QPushButton(tr("⏹ Стоп"), m_imageGroup);
+    m_imageStopBtn = new QPushButton(tr("Стоп"), m_imageGroup);
     m_imageStopBtn->setObjectName("stopButton");
     m_imageStopBtn->setEnabled(false);
     ctrlLayout->addWidget(m_imageStopBtn);
@@ -478,13 +484,13 @@ void SmartWidget::setupSchedulerTab(QWidget* tab)
 
     // Кнопки управления
     auto* btnLayout = new QHBoxLayout();
-    m_schedAddBtn = new QPushButton(tr("➕ Добавить"), m_schedGroup);
+    m_schedAddBtn = new QPushButton(tr("Добавить"), m_schedGroup);
     btnLayout->addWidget(m_schedAddBtn);
 
-    m_schedRemoveBtn = new QPushButton(tr("🗑 Удалить"), m_schedGroup);
+    m_schedRemoveBtn = new QPushButton(tr("Удалить"), m_schedGroup);
     btnLayout->addWidget(m_schedRemoveBtn);
 
-    m_schedToggleBtn = new QPushButton(tr("▶ Запустить планировщик"), m_schedGroup);
+    m_schedToggleBtn = new QPushButton(tr("Запустить планировщик"), m_schedGroup);
     m_schedToggleBtn->setObjectName("startButton");
     btnLayout->addWidget(m_schedToggleBtn);
     schedLayout->addLayout(btnLayout);
@@ -520,13 +526,13 @@ void SmartWidget::setupProfilesTab(QWidget* tab)
     profLayout->addLayout(nameLayout);
 
     auto* btnLayout = new QHBoxLayout();
-    m_profileSaveBtn = new QPushButton(tr("💾 Сохранить"), m_profileGroup);
+    m_profileSaveBtn = new QPushButton(tr("Сохранить"), m_profileGroup);
     btnLayout->addWidget(m_profileSaveBtn);
 
-    m_profileLoadBtn = new QPushButton(tr("📂 Загрузить"), m_profileGroup);
+    m_profileLoadBtn = new QPushButton(tr("Загрузить"), m_profileGroup);
     btnLayout->addWidget(m_profileLoadBtn);
 
-    m_profileDeleteBtn = new QPushButton(tr("🗑 Удалить"), m_profileGroup);
+    m_profileDeleteBtn = new QPushButton(tr("Удалить"), m_profileGroup);
     btnLayout->addWidget(m_profileDeleteBtn);
     profLayout->addLayout(btnLayout);
 
@@ -648,14 +654,14 @@ void SmartWidget::connectSignals()
 
 void SmartWidget::onPickWindow()
 {
-    m_pickWindowBtn->setText(tr("🎯 Кликните по окну..."));
+    m_pickWindowBtn->setText(tr("Кликните по окну..."));
     m_pickWindowBtn->setEnabled(false);
     m_windowFinder->startPickWindow();
 }
 
 void SmartWidget::onWindowPicked(quintptr hwnd, const QString& title)
 {
-    m_pickWindowBtn->setText(tr("🎯 Выбрать кликом"));
+    m_pickWindowBtn->setText(tr("Выбрать кликом"));
     m_pickWindowBtn->setEnabled(true);
 
     // Обновляем информацию
@@ -902,12 +908,12 @@ void SmartWidget::onSchedulerToggle()
 {
     if (m_scheduler->isRunning()) {
         m_scheduler->stop();
-        m_schedToggleBtn->setText(tr("▶ Запустить планировщик"));
+        m_schedToggleBtn->setText(tr("Запустить планировщик"));
         m_schedToggleBtn->setObjectName("startButton");
         m_schedStatusLabel->setText(tr("Планировщик выключен"));
     } else {
         m_scheduler->start();
-        m_schedToggleBtn->setText(tr("⏹ Остановить планировщик"));
+        m_schedToggleBtn->setText(tr("Остановить планировщик"));
         m_schedToggleBtn->setObjectName("stopButton");
         m_schedStatusLabel->setText(tr("Планировщик работает..."));
     }
@@ -939,7 +945,7 @@ void SmartWidget::onSchedulerTaskListChanged()
             tr("Каждые %1 мин").arg(task.repeatIntervalMin) : tr("Однократно");
         m_schedTable->setItem(i, 3, new QTableWidgetItem(repeatStr));
 
-        QString statusStr = task.enabled ? tr("✅ Активно") : tr("⏸ Выключено");
+        QString statusStr = task.enabled ? tr("Активно") : tr("Выключено");
         m_schedTable->setItem(i, 4, new QTableWidgetItem(statusStr));
     }
 }

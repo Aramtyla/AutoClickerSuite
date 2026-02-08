@@ -8,6 +8,7 @@
 #include "ThemeManager.h"
 #include "LanguageManager.h"
 #include "ProfileManager.h"
+#include "SettingsWidget.h"
 
 #include "mouse/MouseWidget.h"
 #include "mouse/MouseClicker.h"
@@ -35,7 +36,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QClipboard>
-#include <QMenu>
+#include <QEvent>
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -81,6 +82,12 @@ void MainWindow::setupUI()
     m_splitter = new QSplitter(Qt::Vertical, this);
 
     // ==========================================
+    // Лог-панель — создаём ПЕРЕД модулями, т.к. их конструкторы
+    // могут вызывать LOG_*, который обращается к m_logView
+    // ==========================================
+    setupLog();
+
+    // ==========================================
     // Вкладки модулей
     // ==========================================
     m_tabWidget = new QTabWidget(m_splitter);
@@ -98,11 +105,6 @@ void MainWindow::setupUI()
     m_tabWidget->addTab(m_keyboardWidget, QIcon(":/icons/keyboard.png"), tr("Клавиатура"));
     m_tabWidget->addTab(m_macroWidget,    QIcon(":/icons/macro.png"),    tr("Макросы"));
     m_tabWidget->addTab(m_smartWidget,    QIcon(":/icons/smart.png"),    tr("Умные режимы"));
-
-    // ==========================================
-    // Лог-панель внизу
-    // ==========================================
-    setupLog();
 
     // Сплиттер: 70% вкладки, 30% лог
     m_splitter->addWidget(m_tabWidget);
@@ -180,6 +182,13 @@ void MainWindow::setupMenuBar()
     QAction* langAction = viewMenu->addAction(tr("Сменить язык (RU/EN)"));
     langAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_L));
     connect(langAction, &QAction::triggered, this, &MainWindow::onLanguageToggle);
+
+    viewMenu->addSeparator();
+
+    QAction* settingsAction = viewMenu->addAction(tr("Настройки..."));
+    settingsAction->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Comma));
+    settingsAction->setIcon(QIcon(":/icons/settings.svg"));
+    connect(settingsAction, &QAction::triggered, this, &MainWindow::onOpenSettings);
 
     // ==========================================
     // Меню "Справка"
@@ -259,7 +268,7 @@ void MainWindow::connectSignals()
             // На вкладке макросов — полная запись (мышь + клавиатура)
             m_macroWidget->toggleRecord();
             if (m_macroWidget->recorder()->isRecording()) {
-                updateStatusBar(tr("🔴 Запись макроса..."));
+                updateStatusBar(tr("Запись макроса..."));
             } else {
                 updateStatusBar(tr("Запись макроса остановлена"));
             }
@@ -270,7 +279,7 @@ void MainWindow::connectSignals()
                 updateStatusBar(tr("Запись макроса остановлена"));
             } else {
                 m_keyboardWidget->clicker()->startRecording();
-                updateStatusBar(tr("🔴 Запись макроса..."));
+                updateStatusBar(tr("Запись макроса..."));
             }
         }
     });
@@ -292,8 +301,14 @@ void MainWindow::connectSignals()
         // Останавливаем умные режимы
         m_smartWidget->emergencyStop();
 
-        updateStatusBar(tr("⛔ Экстренная остановка!"));
+        updateStatusBar(tr("Экстренная остановка!"));
         LOG_WARNING(tr("Экстренная остановка всех модулей (F8)"));
+    });
+
+    // F9 — Выход из приложения
+    connect(m_hotkeyManager, &HotkeyManager::exitAppTriggered, this, [this]() {
+        LOG_INFO(tr("Выход по горячей клавише"));
+        qApp->quit();
     });
 
     // Планировщик → запуск макроса
@@ -350,6 +365,83 @@ void MainWindow::onAbout()
            "макросов и умных режимов.</p>"
            "<p>C++ / Qt6 / Win32 API</p>")
         .arg(APP_VERSION));
+}
+
+void MainWindow::onOpenSettings()
+{
+    SettingsWidget dlg(m_hotkeyManager, m_themeManager, m_langManager, this);
+    dlg.exec();
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+    if (event->type() == QEvent::LanguageChange) {
+        // Защита: если UI ещё не создан (LanguageChange во время конструктора)
+        if (!m_tabWidget) {
+            QMainWindow::changeEvent(event);
+            return;
+        }
+
+        // === Сохраняем текущее состояние ===
+        int currentTab = m_tabWidget->currentIndex();
+        QByteArray splitterState = m_splitter ? m_splitter->saveState() : QByteArray();
+        QString logContent;
+        if (m_logView) {
+            logContent = m_logView->document()->toHtml();
+        }
+
+        // === Обнуляем указатели ПЕРЕД удалением ===
+        // Иначе LOG-вызовы в деструкторах обращаются к уже уничтоженному m_logView
+        m_logView        = nullptr;
+        m_mouseWidget    = nullptr;
+        m_keyboardWidget = nullptr;
+        m_macroWidget    = nullptr;
+        m_smartWidget    = nullptr;
+        m_tabWidget      = nullptr;
+        m_splitter       = nullptr;
+
+        // === Удаляем центральный виджет (уничтожает все модульные виджеты) ===
+        delete centralWidget();
+
+        // === Создаём UI заново с новым языком ===
+        setupUI();
+
+        // Восстанавливаем лог
+        if (m_logView && !logContent.isEmpty()) {
+            m_logView->document()->setHtml(logContent);
+        }
+
+        // === Переподключаем сигналы, отправители которых были уничтожены ===
+        connect(m_smartWidget, &SmartWidget::runMacroRequested, this, [this](const QString& macroName) {
+            m_tabWidget->setCurrentIndex(2);
+            LOG_INFO(tr("Планировщик: запуск макроса '%1'").arg(macroName));
+            if (!m_macroWidget->playMacroByName(macroName)) {
+                LOG_WARNING(tr("Макрос '%1' не найден в библиотеке").arg(macroName));
+            }
+        });
+
+        // Обновляем ссылки
+        m_profileManager->setModuleWidgets(m_mouseWidget, m_keyboardWidget, m_smartWidget);
+        updateMacroListForScheduler();
+
+        // === Перестраиваем меню и трей ===
+        menuBar()->clear();
+        setupMenuBar();
+        m_trayManager->retranslateUi();
+
+        // === Обновляем заголовки ===
+        setWindowTitle(tr("AutoClicker Suite"));
+        updateStatusBar(tr("Готов к работе"));
+
+        // === Восстанавливаем состояние ===
+        if (m_tabWidget && currentTab < m_tabWidget->count()) {
+            m_tabWidget->setCurrentIndex(currentTab);
+        }
+        if (m_splitter && !splitterState.isEmpty()) {
+            m_splitter->restoreState(splitterState);
+        }
+    }
+    QMainWindow::changeEvent(event);
 }
 
 void MainWindow::onLoadProfile()

@@ -5,6 +5,7 @@
 #include "HotkeyManager.h"
 #include "utils/Logger.h"
 #include "utils/Constants.h"
+#include "utils/Settings.h"
 
 #include <QCoreApplication>
 
@@ -80,15 +81,24 @@ void HotkeyManager::unregisterAll()
 void HotkeyManager::registerDefaults()
 {
     using namespace AppConstants::Hotkeys;
+    auto& s = Settings::instance();
 
-    // F6 — Старт/Стоп автоклика
-    registerHotkey(ID_START_STOP, 0, VK_F6);
+    // Загружаем сохранённые биндинги, или используем умолчания
+    UINT startMod = static_cast<UINT>(s.intValue("hotkeys/startStop_mod", 0));
+    UINT startVk  = static_cast<UINT>(s.intValue("hotkeys/startStop_vk", VK_F6));
+    registerHotkey(ID_START_STOP, startMod, startVk);
 
-    // F7 — Запись макроса
-    registerHotkey(ID_RECORD_MACRO, 0, VK_F7);
+    UINT recMod = static_cast<UINT>(s.intValue("hotkeys/record_mod", 0));
+    UINT recVk  = static_cast<UINT>(s.intValue("hotkeys/record_vk", VK_F7));
+    registerHotkey(ID_RECORD_MACRO, recMod, recVk);
 
-    // F8 — Экстренная остановка всего
-    registerHotkey(ID_EMERGENCY_STOP, 0, VK_F8);
+    UINT emMod = static_cast<UINT>(s.intValue("hotkeys/emergency_mod", 0));
+    UINT emVk  = static_cast<UINT>(s.intValue("hotkeys/emergency_vk", VK_F8));
+    registerHotkey(ID_EMERGENCY_STOP, emMod, emVk);
+
+    UINT exitMod = static_cast<UINT>(s.intValue("hotkeys/exit_mod", 0));
+    UINT exitVk  = static_cast<UINT>(s.intValue("hotkeys/exit_vk", VK_F9));
+    registerHotkey(ID_EXIT_APP, exitMod, exitVk);
 }
 
 bool HotkeyManager::nativeEventFilter(const QByteArray& eventType,
@@ -115,6 +125,9 @@ bool HotkeyManager::nativeEventFilter(const QByteArray& eventType,
             } else if (id == ID_EMERGENCY_STOP) {
                 emit emergencyStopTriggered();
                 LOG_DEBUG(tr("Хоткей: Экстренная остановка (F8)"));
+            } else if (id == ID_EXIT_APP) {
+                emit exitAppTriggered();
+                LOG_DEBUG(tr("Хоткей: Выход из приложения (F9)"));
             }
 
             return true;  // Событие обработано

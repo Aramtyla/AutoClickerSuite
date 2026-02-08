@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(AutoClickerSuite VERSION 1.0.0 LANGUAGES CXX)
+project(AutoClickerSuite VERSION 2.0.0 LANGUAGES CXX)
 
 # ==========================================
 # Версия и метаданные для сборки
@@ -88,6 +88,7 @@ set(APP_SOURCES
     src/app/ThemeManager.cpp
     src/app/LanguageManager.cpp
     src/app/ProfileManager.cpp
+    src/app/SettingsWidget.cpp
 )
 set(APP_HEADERS
     src/app/MainWindow.h
@@ -96,6 +97,7 @@ set(APP_HEADERS
     src/app/ThemeManager.h
     src/app/LanguageManager.h
     src/app/ProfileManager.h
+    src/app/SettingsWidget.h
 )
 
 # Модуль мыши
@@ -198,25 +200,11 @@ qt_add_executable(${PROJECT_NAME} WIN32
 # ==========================================
 # Мультиязычность — сборка .qm файлов из .ts
 # ==========================================
+# RESOURCE_PREFIX встраивает .qm в бинарник как :/translations/*.qm
 qt_add_translations(${PROJECT_NAME}
     TS_FILES ${TS_FILES}
-    QM_FILES_OUTPUT_VARIABLE QM_FILES
+    RESOURCE_PREFIX "/translations"
 )
-
-# Копируем .qm файлы рядом с исполняемым файлом для доступа из ресурсов
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${PROJECT_NAME}>/translations"
-    COMMENT "Создание каталога переводов..."
-)
-
-foreach(QM_FILE ${QM_FILES})
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${QM_FILE}"
-            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/translations/"
-        COMMENT "Копирование файла перевода: ${QM_FILE}"
-    )
-endforeach()
 
 # ==========================================
 # Линковка

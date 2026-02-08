@@ -64,6 +64,7 @@ private:
     void setupModeSelector();
     void setupSingleKeyPage();
     void setupComboKeyPage();
+    void setupHoldKeyPage();
     void setupTypeTextPage();
     void setupMacroPage();
     void setupLimitsGroup();
@@ -116,7 +117,20 @@ private:
     bool             m_capturingCombo  = false;
 
     // ==========================================
-    // Страница 3: Ввод текста
+    // Страница 3: Зажатие клавиши (Hold)
+    // ==========================================
+    QWidget*         m_holdKeyPage     = nullptr;
+    QPushButton*     m_captureHoldBtn  = nullptr;
+    QLabel*          m_capturedHoldLabel = nullptr;
+    QCheckBox*       m_holdCtrlCheck   = nullptr;
+    QCheckBox*       m_holdShiftCheck  = nullptr;
+    QCheckBox*       m_holdAltCheck    = nullptr;
+    QCheckBox*       m_holdWinCheck    = nullptr;
+    int              m_holdVkCode      = 0;
+    bool             m_capturingHold   = false;
+
+    // ==========================================
+    // Страница 4: Ввод текста
     // ==========================================
     QWidget*         m_typeTextPage    = nullptr;
     QPlainTextEdit*  m_textEdit        = nullptr;

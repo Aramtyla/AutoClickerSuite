@@ -23,6 +23,9 @@ public:
     // Видима ли иконка в трее
     bool isVisible() const;
 
+    // Перестроить меню при смене языка
+    void retranslateUi();
+
 signals:
     void showWindowRequested();
     void quitRequested();

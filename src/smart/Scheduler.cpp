@@ -121,7 +121,7 @@ void Scheduler::onCheckTimer()
         // Проверяем, наступило ли время
         if (task.scheduledTime.isValid() && task.scheduledTime <= now) {
             // Запускаем задание!
-            LOG_INFO(tr("⏰ Планировщик: запуск задания '%1' (макрос: %2)")
+            LOG_INFO(tr("Планировщик: запуск задания '%1' (макрос: %2)")
                 .arg(task.name, task.macroName));
 
             emit taskTriggered(task.macroName);

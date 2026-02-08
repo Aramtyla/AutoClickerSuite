@@ -105,11 +105,11 @@ void MacroEditor::setupActionList()
 
 void MacroEditor::setupToolbar()
 {
-    m_btnAdd      = new QPushButton(tr("➕ Добавить"), this);
-    m_btnRemove   = new QPushButton(tr("🗑 Удалить"), this);
-    m_btnMoveUp   = new QPushButton(tr("⬆"), this);
-    m_btnMoveDown = new QPushButton(tr("⬇"), this);
-    m_btnDuplicate = new QPushButton(tr("📋"), this);
+    m_btnAdd      = new QPushButton(tr("Добавить"), this);
+    m_btnRemove   = new QPushButton(tr("Удалить"), this);
+    m_btnMoveUp   = new QPushButton(tr("Up"), this);
+    m_btnMoveDown = new QPushButton(tr("Down"), this);
+    m_btnDuplicate = new QPushButton(tr("Copy"), this);
 
     m_btnMoveUp->setFixedWidth(32);
     m_btnMoveDown->setFixedWidth(32);
@@ -133,7 +133,7 @@ void MacroEditor::createAddMenu()
     m_addMenu = new QMenu(this);
 
     // Мышь
-    auto* mouseMenu = m_addMenu->addMenu(tr("🖱 Мышь"));
+    auto* mouseMenu = m_addMenu->addMenu(tr("Мышь"));
     mouseMenu->addAction(tr("Клик мышью"), this, [this]() {
         addActionOfType(MacroActionType::MouseClick);
     });
@@ -151,7 +151,7 @@ void MacroEditor::createAddMenu()
     });
 
     // Клавиатура
-    auto* kbMenu = m_addMenu->addMenu(tr("⌨ Клавиатура"));
+    auto* kbMenu = m_addMenu->addMenu(tr("Клавиатура"));
     kbMenu->addAction(tr("Нажать клавишу"), this, [this]() {
         addActionOfType(MacroActionType::KeyPress);
     });
@@ -170,28 +170,28 @@ void MacroEditor::createAddMenu()
 
     // Управление
     m_addMenu->addSeparator();
-    m_addMenu->addAction(tr("⏱ Задержка"), this, [this]() {
+    m_addMenu->addAction(tr("Задержка"), this, [this]() {
         addActionOfType(MacroActionType::Delay);
     });
-    m_addMenu->addAction(tr("🎲 Случайная задержка"), this, [this]() {
+    m_addMenu->addAction(tr("Случайная задержка"), this, [this]() {
         addActionOfType(MacroActionType::RandomDelay);
     });
 
     // Циклы
     m_addMenu->addSeparator();
-    m_addMenu->addAction(tr("🔁 Начало цикла"), this, [this]() {
+    m_addMenu->addAction(tr("Начало цикла"), this, [this]() {
         addActionOfType(MacroActionType::LoopStart);
     });
-    m_addMenu->addAction(tr("🔁 Конец цикла"), this, [this]() {
+    m_addMenu->addAction(tr("Конец цикла"), this, [this]() {
         addActionOfType(MacroActionType::LoopEnd);
     });
 
     // Вложенные макросы и комментарии
     m_addMenu->addSeparator();
-    m_addMenu->addAction(tr("📦 Вложенный макрос"), this, [this]() {
+    m_addMenu->addAction(tr("Вложенный макрос"), this, [this]() {
         addActionOfType(MacroActionType::SubMacro);
     });
-    m_addMenu->addAction(tr("💬 Комментарий"), this, [this]() {
+    m_addMenu->addAction(tr("Комментарий"), this, [this]() {
         addActionOfType(MacroActionType::Comment);
     });
 }
@@ -261,7 +261,7 @@ void MacroEditor::setupParamsPanel()
     m_keyNameLabel = new QLabel(tr("—"), kbPage);
     kbLayout->addRow(tr("Клавиша:"), m_keyNameLabel);
 
-    m_captureKeyBtn = new QPushButton(tr("🎯 Захватить клавишу"), kbPage);
+    m_captureKeyBtn = new QPushButton(tr("Захватить клавишу"), kbPage);
     kbLayout->addRow(m_captureKeyBtn);
 
     m_ctrlCheck  = new QCheckBox(tr("Ctrl"), kbPage);
@@ -282,7 +282,7 @@ void MacroEditor::setupParamsPanel()
 
     connect(m_captureKeyBtn, &QPushButton::clicked, this, [this]() {
         m_capturing = true;
-        m_captureKeyBtn->setText(tr("⏳ Нажмите клавишу..."));
+        m_captureKeyBtn->setText(tr("Нажмите клавишу..."));
         m_captureKeyBtn->setFocus();
     });
 
@@ -984,7 +984,7 @@ bool MacroEditor::eventFilter(QObject* obj, QEvent* event)
         }
 
         m_capturing = false;
-        m_captureKeyBtn->setText(tr("🎯 Захватить клавишу"));
+        m_captureKeyBtn->setText(tr("Захватить клавишу"));
         return true;
     }
 

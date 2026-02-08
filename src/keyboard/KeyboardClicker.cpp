@@ -53,6 +53,30 @@ void KeyboardClicker::start()
             m_timer->start(nextInterval());
             break;
 
+        case KeyboardMode::HoldKey: {
+            // Режим зажатия: нажимаем клавишу и держим до остановки
+            disconnect(m_timer, &QTimer::timeout, nullptr, nullptr);
+            int vk = m_config.virtualKeyCode;
+            QList<quint16> mods = buildModifiers();
+            for (quint16 mod : mods) {
+                m_input->keyDown(mod);
+            }
+            m_input->keyDown(static_cast<WORD>(vk));
+            m_pressCount = 1;
+            emit keyPressed(1, vk);
+            // Таймер для проверки лимитов
+            if (m_config.timeLimitMs > 0) {
+                connect(m_timer, &QTimer::timeout, this, [this]() {
+                    if (checkLimits()) {
+                        stop();
+                        emit finished();
+                    }
+                });
+                m_timer->start(100); // Проверяем каждые 100мс
+            }
+            break;
+        }
+
         case KeyboardMode::TypeText:
             // Режим печати текста: один символ за тик
             disconnect(m_timer, &QTimer::timeout, nullptr, nullptr);
@@ -80,6 +104,7 @@ void KeyboardClicker::start()
     switch (m_config.mode) {
         case KeyboardMode::SingleKey:      modeStr = tr("одиночная клавиша"); break;
         case KeyboardMode::KeyCombination: modeStr = tr("комбинация клавиш"); break;
+        case KeyboardMode::HoldKey:        modeStr = tr("зажатие клавиши"); break;
         case KeyboardMode::TypeText:       modeStr = tr("ввод текста"); break;
         case KeyboardMode::MacroPlayback:  modeStr = tr("воспроизведение макроса"); break;
     }
@@ -93,6 +118,17 @@ void KeyboardClicker::stop()
     if (!m_running) return;
 
     m_timer->stop();
+
+    // Если в режиме зажатия — отпускаем клавишу
+    if (m_config.mode == KeyboardMode::HoldKey) {
+        int vk = m_config.virtualKeyCode;
+        m_input->keyUp(static_cast<WORD>(vk));
+        QList<quint16> mods = buildModifiers();
+        for (int i = mods.size() - 1; i >= 0; --i) {
+            m_input->keyUp(mods[i]);
+        }
+    }
+
     m_running = false;
 
     qint64 elapsed = m_elapsed.elapsed();

@@ -202,10 +202,10 @@ void MacroWidget::setupUI()
 
 void MacroWidget::setupToolbar()
 {
-    m_btnRecord = new QPushButton(tr("⏺ Записать (F7)"), this);
-    m_btnPlay   = new QPushButton(tr("▶ Воспроизвести (F6)"), this);
-    m_btnPause  = new QPushButton(tr("⏸ Пауза"), this);
-    m_btnStop   = new QPushButton(tr("⏹ Стоп"), this);
+    m_btnRecord = new QPushButton(tr("Записать (F7)"), this);
+    m_btnPlay   = new QPushButton(tr("Воспроизвести (F6)"), this);
+    m_btnPause  = new QPushButton(tr("Пауза"), this);
+    m_btnStop   = new QPushButton(tr("Стоп"), this);
 
     m_btnRecord->setCheckable(true);
     m_btnPause->setEnabled(false);
@@ -227,11 +227,11 @@ void MacroWidget::setupMacroList()
     m_macroList = new QListWidget(this);
     m_macroList->setMaximumHeight(200);
 
-    m_btnNewMacro    = new QPushButton(tr("➕ Новый"), this);
-    m_btnDeleteMacro = new QPushButton(tr("🗑 Удалить"), this);
-    m_btnRenameMacro = new QPushButton(tr("✏ Переименовать"), this);
-    m_btnImport      = new QPushButton(tr("📥 Импорт"), this);
-    m_btnExport      = new QPushButton(tr("📤 Экспорт"), this);
+    m_btnNewMacro    = new QPushButton(tr("Новый"), this);
+    m_btnDeleteMacro = new QPushButton(tr("Удалить"), this);
+    m_btnRenameMacro = new QPushButton(tr("Переименовать"), this);
+    m_btnImport      = new QPushButton(tr("Импорт"), this);
+    m_btnExport      = new QPushButton(tr("Экспорт"), this);
 
     connect(m_btnNewMacro,    &QPushButton::clicked, this, &MacroWidget::onNewMacro);
     connect(m_btnDeleteMacro, &QPushButton::clicked, this, &MacroWidget::onDeleteMacro);
@@ -375,10 +375,10 @@ void MacroWidget::onPause()
 {
     if (m_player->isPaused()) {
         m_player->resume();
-        m_btnPause->setText(tr("⏸ Пауза"));
+        m_btnPause->setText(tr("Пауза"));
     } else if (m_player->isPlaying()) {
         m_player->pause();
-        m_btnPause->setText(tr("▶ Продолжить"));
+        m_btnPause->setText(tr("Продолжить"));
     }
 }
 
@@ -586,16 +586,16 @@ void MacroWidget::onExportMacro()
 void MacroWidget::onRecordingStarted()
 {
     m_btnRecord->setChecked(true);
-    m_btnRecord->setText(tr("⏹ Остановить запись"));
+    m_btnRecord->setText(tr("Остановить запись"));
     m_btnPlay->setEnabled(false);
-    m_statusLabel->setText(tr("Статус: 🔴 Запись..."));
+    m_statusLabel->setText(tr("Статус: Запись..."));
     m_progressBar->setRange(0, 0);  // Индикатор бесконечной активности
 }
 
 void MacroWidget::onRecordingStopped()
 {
     m_btnRecord->setChecked(false);
-    m_btnRecord->setText(tr("⏺ Записать (F7)"));
+    m_btnRecord->setText(tr("Записать (F7)"));
     m_btnPlay->setEnabled(true);
     m_statusLabel->setText(tr("Статус: Запись завершена"));
     m_progressBar->setRange(0, 100);
@@ -629,7 +629,7 @@ void MacroWidget::onPlaybackStarted()
     m_btnPause->setEnabled(true);
     m_btnStop->setEnabled(true);
     m_btnRecord->setEnabled(false);
-    m_statusLabel->setText(tr("Статус: ▶ Воспроизведение..."));
+    m_statusLabel->setText(tr("Статус: Воспроизведение..."));
     emit macroStarted();
 }
 
@@ -639,7 +639,7 @@ void MacroWidget::onPlaybackStopped()
     m_btnPause->setEnabled(false);
     m_btnStop->setEnabled(false);
     m_btnRecord->setEnabled(true);
-    m_btnPause->setText(tr("⏸ Пауза"));
+    m_btnPause->setText(tr("Пауза"));
     m_progressBar->setValue(0);
     m_editor->clearHighlight();
     updateToolbarState();
@@ -648,7 +648,7 @@ void MacroWidget::onPlaybackStopped()
 
 void MacroWidget::onPlaybackFinished()
 {
-    m_statusLabel->setText(tr("Статус: ✅ Воспроизведение завершено"));
+    m_statusLabel->setText(tr("Статус: Воспроизведение завершено"));
     m_progressBar->setValue(100);
     LOG_INFO(tr("Макрос полностью воспроизведён"));
 }

@@ -13,6 +13,7 @@
 enum class KeyboardMode {
     SingleKey,       // Повторение одной клавиши
     KeyCombination,  // Повторение комбинации (Ctrl+V, и т.д.)
+    HoldKey,         // Зажатие клавиши (удерживание)
     TypeText,        // Посимвольный ввод текста
     MacroPlayback    // Воспроизведение записанной последовательности
 };

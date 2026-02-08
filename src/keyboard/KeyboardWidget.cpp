@@ -96,10 +96,11 @@ void KeyboardWidget::setupModeSelector()
     auto* layout = new QVBoxLayout(m_modeGroup);
 
     m_modeCombo = new QComboBox();
-    m_modeCombo->addItem(tr("⌨ Одиночная клавиша"),  static_cast<int>(KeyboardMode::SingleKey));
-    m_modeCombo->addItem(tr("🔗 Комбинация клавиш"), static_cast<int>(KeyboardMode::KeyCombination));
-    m_modeCombo->addItem(tr("📝 Ввод текста"),       static_cast<int>(KeyboardMode::TypeText));
-    m_modeCombo->addItem(tr("🎬 Макрос клавиатуры"), static_cast<int>(KeyboardMode::MacroPlayback));
+    m_modeCombo->addItem(tr("Одиночная клавиша"),  static_cast<int>(KeyboardMode::SingleKey));
+    m_modeCombo->addItem(tr("Комбинация клавиш"), static_cast<int>(KeyboardMode::KeyCombination));
+    m_modeCombo->addItem(tr("Зажатие клавиши"),   static_cast<int>(KeyboardMode::HoldKey));
+    m_modeCombo->addItem(tr("Ввод текста"),       static_cast<int>(KeyboardMode::TypeText));
+    m_modeCombo->addItem(tr("Макрос клавиатуры"), static_cast<int>(KeyboardMode::MacroPlayback));
     layout->addWidget(m_modeCombo);
 
     // Стек страниц для каждого режима
@@ -107,11 +108,13 @@ void KeyboardWidget::setupModeSelector()
 
     setupSingleKeyPage();
     setupComboKeyPage();
+    setupHoldKeyPage();
     setupTypeTextPage();
     setupMacroPage();
 
     m_modeStack->addWidget(m_singleKeyPage);
     m_modeStack->addWidget(m_comboKeyPage);
+    m_modeStack->addWidget(m_holdKeyPage);
     m_modeStack->addWidget(m_typeTextPage);
     m_modeStack->addWidget(m_macroPage);
 
@@ -130,7 +133,7 @@ void KeyboardWidget::setupSingleKeyPage()
 
     // Захват клавиши
     auto* captureLayout = new QHBoxLayout();
-    m_captureKeyBtn = new QPushButton(tr("🎯 Захватить клавишу"));
+    m_captureKeyBtn = new QPushButton(tr("Захватить клавишу"));
     m_captureKeyBtn->setToolTip(tr("Нажмите, затем нажмите нужную клавишу"));
     m_capturedKeyLabel = new QLabel(tr("Не выбрана"));
     m_capturedKeyLabel->setStyleSheet("font-weight: bold; font-size: 11pt;");
@@ -173,7 +176,7 @@ void KeyboardWidget::setupComboKeyPage()
 
     // Захват основной клавиши
     auto* captureLayout = new QHBoxLayout();
-    m_captureComboBtn = new QPushButton(tr("🎯 Захватить клавишу"));
+    m_captureComboBtn = new QPushButton(tr("Захватить клавишу"));
     m_capturedComboLabel = new QLabel(tr("Не выбрана"));
     m_capturedComboLabel->setStyleSheet("font-weight: bold; font-size: 11pt;");
     captureLayout->addWidget(m_captureComboBtn);
@@ -204,14 +207,62 @@ void KeyboardWidget::setupComboKeyPage()
     layout->addRow(tr("Интервал повторения:"), m_comboIntervalSpin);
 
     // Подсказка
-    auto* hint = new QLabel(tr("💡 Пример: Ctrl+V — автоматическая вставка из буфера"));
+    auto* hint = new QLabel(tr("Пример: Ctrl+V — автоматическая вставка из буфера"));
     hint->setStyleSheet("color: gray; font-size: 9pt;");
     hint->setWordWrap(true);
     layout->addRow(hint);
 }
 
 // ===========================================
-// Страница 3: Ввод текста
+// Страница 3: Зажатие клавиши (Hold)
+// ===========================================
+
+void KeyboardWidget::setupHoldKeyPage()
+{
+    m_holdKeyPage = new QWidget();
+    auto* layout = new QFormLayout(m_holdKeyPage);
+
+    // Захват клавиши
+    auto* captureLayout = new QHBoxLayout();
+    m_captureHoldBtn = new QPushButton(tr("Захватить клавишу"));
+    m_captureHoldBtn->setToolTip(tr("Нажмите, затем нажмите нужную клавишу"));
+    m_capturedHoldLabel = new QLabel(tr("Не выбрана"));
+    m_capturedHoldLabel->setStyleSheet("font-weight: bold; font-size: 11pt;");
+    captureLayout->addWidget(m_captureHoldBtn);
+    captureLayout->addWidget(m_capturedHoldLabel);
+    captureLayout->addStretch();
+    layout->addRow(tr("Клавиша:"), captureLayout);
+
+    // Модификаторы
+    auto* modLayout = new QHBoxLayout();
+    m_holdCtrlCheck  = new QCheckBox("Ctrl");
+    m_holdShiftCheck = new QCheckBox("Shift");
+    m_holdAltCheck   = new QCheckBox("Alt");
+    m_holdWinCheck   = new QCheckBox("Win");
+    modLayout->addWidget(m_holdCtrlCheck);
+    modLayout->addWidget(m_holdShiftCheck);
+    modLayout->addWidget(m_holdAltCheck);
+    modLayout->addWidget(m_holdWinCheck);
+    layout->addRow(tr("Модификаторы:"), modLayout);
+
+    // Подсказка
+    auto* hint = new QLabel(tr("Клавиша будет зажата (удерживаться) пока вы не нажмёте Стоп.\n"
+                                "Используйте для удержания клавиш в играх или приложениях."));
+    hint->setStyleSheet("color: gray; font-size: 9pt;");
+    hint->setWordWrap(true);
+    layout->addRow(hint);
+
+    // Подключаем захват
+    connect(m_captureHoldBtn, &QPushButton::clicked, this, [this]() {
+        m_capturingHold = true;
+        m_captureHoldBtn->setText(tr("Нажмите клавишу..."));
+        m_captureHoldBtn->setFocus();
+        m_captureHoldBtn->installEventFilter(this);
+    });
+}
+
+// ===========================================
+// Страница 4: Ввод текста
 // ===========================================
 
 void KeyboardWidget::setupTypeTextPage()
@@ -241,8 +292,8 @@ void KeyboardWidget::setupTypeTextPage()
 
     // Подсказка
     auto* hint = new QLabel(tr(
-        "💡 Текст будет введён посимвольно через Unicode (поддерживает кириллицу, "
-        "спецсимволы и эмодзи). Перенос строки — Enter."));
+        "Текст будет введён посимвольно через Unicode (поддерживает кириллицу, "
+        "спецсимволы). Перенос строки — Enter."));
     hint->setStyleSheet("color: gray; font-size: 9pt;");
     hint->setWordWrap(true);
     layout->addWidget(hint);
@@ -262,12 +313,12 @@ void KeyboardWidget::setupMacroPage()
     // Кнопки управления записью
     auto* btnLayout = new QHBoxLayout();
 
-    m_recordBtn = new QPushButton(tr("⏺ Начать запись"));
+    m_recordBtn = new QPushButton(tr("Начать запись"));
     m_recordBtn->setObjectName("recordButton");
     m_recordBtn->setMinimumHeight(36);
     m_recordBtn->setToolTip(tr("Запись нажатий клавиш (F7)"));
 
-    m_clearMacroBtn = new QPushButton(tr("🗑 Очистить"));
+    m_clearMacroBtn = new QPushButton(tr("Очистить"));
     m_clearMacroBtn->setMinimumHeight(36);
 
     btnLayout->addWidget(m_recordBtn);
@@ -386,12 +437,12 @@ void KeyboardWidget::setupControlGroup()
     // Кнопки Старт / Стоп
     auto* btnLayout = new QHBoxLayout();
 
-    m_startButton = new QPushButton(tr("▶ Старт"));
+    m_startButton = new QPushButton(tr("Старт"));
     m_startButton->setObjectName("startButton");
     m_startButton->setMinimumHeight(40);
     m_startButton->setToolTip(tr("Начать автонажатие (F6)"));
 
-    m_stopButton = new QPushButton(tr("⏹ Стоп"));
+    m_stopButton = new QPushButton(tr("Стоп"));
     m_stopButton->setObjectName("stopButton");
     m_stopButton->setMinimumHeight(40);
     m_stopButton->setEnabled(false);
@@ -402,7 +453,7 @@ void KeyboardWidget::setupControlGroup()
     layout->addLayout(btnLayout);
 
     // Статус
-    m_statusLabel = new QLabel(tr("⏸ Остановлен"));
+    m_statusLabel = new QLabel(tr("Остановлен"));
     m_statusLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setStyleSheet("font-size: 11pt; font-weight: bold; padding: 4px;");
     layout->addWidget(m_statusLabel);
@@ -422,7 +473,7 @@ void KeyboardWidget::setupControlGroup()
     layout->addLayout(statsLayout);
 
     // Подсказка
-    auto* hotkeyHint = new QLabel(tr("💡 Горячие клавиши: F6 — Старт/Стоп | F7 — Запись макроса"));
+    auto* hotkeyHint = new QLabel(tr("Горячие клавиши: F6 — Старт/Стоп | F7 — Запись макроса"));
     hotkeyHint->setStyleSheet("color: gray; font-size: 9pt; padding-top: 6px;");
     hotkeyHint->setWordWrap(true);
     layout->addWidget(hotkeyHint);
@@ -448,7 +499,7 @@ void KeyboardWidget::connectSignals()
     connect(m_captureKeyBtn,   &QPushButton::clicked, this, &KeyboardWidget::onCaptureKey);
     connect(m_captureComboBtn, &QPushButton::clicked, this, [this]() {
         m_capturingCombo = true;
-        m_captureComboBtn->setText(tr("⏳ Нажмите клавишу..."));
+        m_captureComboBtn->setText(tr("Нажмите клавишу..."));
         m_captureComboBtn->setEnabled(false);
         // Устанавливаем фокус для перехвата
         setFocus();
@@ -461,7 +512,7 @@ void KeyboardWidget::connectSignals()
     connect(m_clicker, &KeyboardClicker::actionRecorded,
             this, &KeyboardWidget::onActionRecorded);
     connect(m_clicker, &KeyboardClicker::recordingStopped, this, [this]() {
-        m_recordBtn->setText(tr("⏺ Начать запись"));
+        m_recordBtn->setText(tr("Начать запись"));
         m_macroStatusLabel->setText(tr("Записанных действий: %1")
             .arg(m_clicker->recordedActions().size()));
         updateMacroTable();
@@ -503,7 +554,7 @@ bool KeyboardWidget::eventFilter(QObject* obj, QEvent* event)
         if (m_capturingKey) {
             m_capturedVkCode = vkCode;
             m_capturedKeyLabel->setText(KeyboardClicker::vkCodeToName(vkCode));
-            m_captureKeyBtn->setText(tr("🎯 Захватить клавишу"));
+            m_captureKeyBtn->setText(tr("Захватить клавишу"));
             m_captureKeyBtn->setEnabled(true);
             m_capturingKey = false;
             removeEventFilter(this);
@@ -514,10 +565,21 @@ bool KeyboardWidget::eventFilter(QObject* obj, QEvent* event)
         if (m_capturingCombo) {
             m_comboVkCode = vkCode;
             m_capturedComboLabel->setText(KeyboardClicker::vkCodeToName(vkCode));
-            m_captureComboBtn->setText(tr("🎯 Захватить клавишу"));
+            m_captureComboBtn->setText(tr("Захватить клавишу"));
             m_captureComboBtn->setEnabled(true);
             m_capturingCombo = false;
             removeEventFilter(this);
+            applyConfig();
+            return true;
+        }
+
+        if (m_capturingHold) {
+            m_holdVkCode = vkCode;
+            m_capturedHoldLabel->setText(KeyboardClicker::vkCodeToName(vkCode));
+            m_captureHoldBtn->setText(tr("Захватить клавишу"));
+            m_captureHoldBtn->setEnabled(true);
+            m_capturingHold = false;
+            m_captureHoldBtn->removeEventFilter(this);
             applyConfig();
             return true;
         }
@@ -601,6 +663,14 @@ void KeyboardWidget::applyConfig()
             cfg.withWin        = m_comboWinCheck->isChecked();
             break;
 
+        case KeyboardMode::HoldKey:
+            cfg.virtualKeyCode = m_holdVkCode;
+            cfg.withCtrl       = m_holdCtrlCheck->isChecked();
+            cfg.withShift      = m_holdShiftCheck->isChecked();
+            cfg.withAlt        = m_holdAltCheck->isChecked();
+            cfg.withWin        = m_holdWinCheck->isChecked();
+            break;
+
         case KeyboardMode::TypeText:
             cfg.textToType     = m_textEdit->toPlainText();
             cfg.typeDelayMs    = m_typeDelaySpin->value();
@@ -636,10 +706,14 @@ void KeyboardWidget::onModeChanged(int index)
 
     auto mode = static_cast<KeyboardMode>(m_modeCombo->currentData().toInt());
 
-    // Для макроса — лимиты по количеству неприменимы (используется повторения макроса)
-    bool showLimits = (mode != KeyboardMode::MacroPlayback);
-    m_limitCountCheck->setVisible(showLimits);
-    m_maxCountSpin->setVisible(showLimits);
+    // Для макроса и зажатия — лимиты по количеству неприменимы
+    bool showCountLimit = (mode != KeyboardMode::MacroPlayback && mode != KeyboardMode::HoldKey);
+    m_limitCountCheck->setVisible(showCountLimit);
+    m_maxCountSpin->setVisible(showCountLimit);
+
+    // Для зажатия — интервал и рандомизация не нужны
+    bool showRandom = (mode != KeyboardMode::HoldKey);
+    m_randomGroup->setVisible(showRandom);
 }
 
 // ===========================================
@@ -649,7 +723,7 @@ void KeyboardWidget::onModeChanged(int index)
 void KeyboardWidget::onCaptureKey()
 {
     m_capturingKey = true;
-    m_captureKeyBtn->setText(tr("⏳ Нажмите клавишу..."));
+    m_captureKeyBtn->setText(tr("Нажмите клавишу..."));
     m_captureKeyBtn->setEnabled(false);
     setFocus();
     installEventFilter(this);
@@ -665,8 +739,8 @@ void KeyboardWidget::onRecordToggle()
         m_clicker->stopRecording();
     } else {
         m_clicker->startRecording();
-        m_recordBtn->setText(tr("⏹ Остановить запись"));
-        m_macroStatusLabel->setText(tr("🔴 Запись..."));
+        m_recordBtn->setText(tr("Остановить запись"));
+        m_macroStatusLabel->setText(tr("Запись..."));
         m_macroTable->setRowCount(0);
     }
 }
@@ -689,7 +763,7 @@ void KeyboardWidget::onActionRecorded(const KeyboardMacroAction& action)
     switch (action.type) {
         case KeyboardMacroAction::Type::KeyDown: typeStr = tr("↓ Нажатие");    break;
         case KeyboardMacroAction::Type::KeyUp:   typeStr = tr("↑ Отпускание"); break;
-        case KeyboardMacroAction::Type::Delay:   typeStr = tr("⏱ Задержка");   break;
+        case KeyboardMacroAction::Type::Delay:   typeStr = tr("Задержка");   break;
     }
     m_macroTable->setItem(row, 0, new QTableWidgetItem(typeStr));
 
@@ -705,7 +779,7 @@ void KeyboardWidget::onActionRecorded(const KeyboardMacroAction& action)
     m_macroTable->setItem(row, 2,
         new QTableWidgetItem(QString::number(action.timestamp)));
 
-    m_macroStatusLabel->setText(tr("🔴 Запись... (действий: %1)").arg(row + 1));
+    m_macroStatusLabel->setText(tr("Запись... (действий: %1)").arg(row + 1));
 
     // Автопрокрутка вниз
     m_macroTable->scrollToBottom();
@@ -730,7 +804,7 @@ void KeyboardWidget::onClickerStarted()
 {
     m_startButton->setEnabled(false);
     m_stopButton->setEnabled(true);
-    m_statusLabel->setText(tr("🟢 Активен"));
+    m_statusLabel->setText(tr("Активен"));
     m_statusLabel->setStyleSheet(
         "font-size: 11pt; font-weight: bold; color: #a6e3a1; padding: 4px;");
 
@@ -741,7 +815,7 @@ void KeyboardWidget::onClickerStopped()
 {
     m_startButton->setEnabled(true);
     m_stopButton->setEnabled(false);
-    m_statusLabel->setText(tr("⏸ Остановлен"));
+    m_statusLabel->setText(tr("Остановлен"));
     m_statusLabel->setStyleSheet(
         "font-size: 11pt; font-weight: bold; padding: 4px;");
 
@@ -750,7 +824,7 @@ void KeyboardWidget::onClickerStopped()
 
 void KeyboardWidget::onClickerFinished()
 {
-    m_statusLabel->setText(tr("✅ Завершён (лимит достигнут)"));
+    m_statusLabel->setText(tr("Завершён (лимит достигнут)"));
     m_statusLabel->setStyleSheet(
         "font-size: 11pt; font-weight: bold; color: #89b4fa; padding: 4px;");
     LOG_INFO(tr("Автонажатие клавиатуры завершено по лимиту"));

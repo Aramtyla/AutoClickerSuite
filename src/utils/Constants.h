@@ -49,6 +49,7 @@ namespace Hotkeys {
     inline constexpr int ID_START_STOP        = 1001;
     inline constexpr int ID_RECORD_MACRO      = 1002;
     inline constexpr int ID_EMERGENCY_STOP    = 1003;
+    inline constexpr int ID_EXIT_APP          = 1004;
 
     // Комбинации по умолчанию
     inline const QKeySequence DEFAULT_START_STOP    = QKeySequence(Qt::Key_F6);

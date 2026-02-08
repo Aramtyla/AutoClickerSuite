@@ -11,5 +11,11 @@
         <file alias="icons/keyboard.png">icons/keyboard.png</file>
         <file alias="icons/macro.png">icons/macro.png</file>
         <file alias="icons/smart.png">icons/smart.png</file>
+        <file alias="icons/settings.svg">icons/settings.svg</file>
+        <file alias="icons/tab_window.svg">icons/tab_window.svg</file>
+        <file alias="icons/tab_color.svg">icons/tab_color.svg</file>
+        <file alias="icons/tab_image.svg">icons/tab_image.svg</file>
+        <file alias="icons/tab_scheduler.svg">icons/tab_scheduler.svg</file>
+        <file alias="icons/tab_profiles.svg">icons/tab_profiles.svg</file>
     </qresource>
 </RCC>
