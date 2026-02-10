@@ -12,19 +12,17 @@
 #include <QGraphicsDropShadowEffect>
 #include <QEasingCurve>
 #include <QFont>
+#include <QtMath>
 
 SplashScreen::SplashScreen(QWidget* parent)
     : QWidget(parent)
 {
-    // Полноценное окно без рамки, поверх всех
     setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::SplashScreen);
     setAttribute(Qt::WA_TranslucentBackground);
     setAttribute(Qt::WA_DeleteOnClose);
 
-    // Размер splash — фиксированный
-    setFixedSize(520, 380);
+    setFixedSize(540, 400);
 
-    // Центрируем на экране
     if (auto* screen = QApplication::primaryScreen()) {
         QRect screenRect = screen->availableGeometry();
         move((screenRect.width() - width()) / 2,
@@ -48,29 +46,17 @@ SplashScreen::SplashScreen(QWidget* parent)
 void SplashScreen::setupUI()
 {
     auto* layout = new QVBoxLayout(this);
-    layout->setContentsMargins(40, 45, 40, 30);
+    layout->setContentsMargins(40, 0, 40, 28);
     layout->setSpacing(0);
 
-    // === Иконка ===
-    m_iconLabel = new QLabel(this);
-    QPixmap icon(":/icons/app.png");
-    if (!icon.isNull()) {
-        m_iconLabel->setPixmap(icon.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    }
-    m_iconLabel->setAlignment(Qt::AlignCenter);
-    m_iconLabel->setFixedHeight(110);
-
-    m_iconEffect = new QGraphicsOpacityEffect(m_iconLabel);
-    m_iconEffect->setOpacity(0.0);
-    m_iconLabel->setGraphicsEffect(m_iconEffect);
-
-    layout->addWidget(m_iconLabel);
+    // Пространство для логотипа (рисуется в paintEvent)
+    layout->addSpacing(170);
 
     // === Название ===
     m_titleLabel = new QLabel("AutoClicker Suite", this);
     m_titleLabel->setAlignment(Qt::AlignCenter);
     m_titleLabel->setStyleSheet(
-        "font-size: 28pt; font-weight: bold; color: #89b4fa; "
+        "font-size: 26pt; font-weight: 700; color: #cdd6f4; "
         "background: transparent; letter-spacing: 1px;"
     );
 
@@ -79,14 +65,14 @@ void SplashScreen::setupUI()
     m_titleLabel->setGraphicsEffect(m_titleEffect);
 
     layout->addWidget(m_titleLabel);
-    layout->addSpacing(6);
+    layout->addSpacing(8);
 
     // === Команда ===
     m_teamLabel = new QLabel("Auto Clicker Suite Team", this);
     m_teamLabel->setAlignment(Qt::AlignCenter);
     m_teamLabel->setStyleSheet(
-        "font-size: 11pt; color: #a6adc8; background: transparent; "
-        "letter-spacing: 2px; font-weight: 300;"
+        "font-size: 10pt; color: #7f849c; background: transparent; "
+        "letter-spacing: 3px; font-weight: 400;"
     );
 
     m_teamEffect = new QGraphicsOpacityEffect(m_teamLabel);
@@ -100,7 +86,7 @@ void SplashScreen::setupUI()
     m_versionLabel = new QLabel(QString("v%1").arg(APP_VERSION), this);
     m_versionLabel->setAlignment(Qt::AlignCenter);
     m_versionLabel->setStyleSheet(
-        "font-size: 9pt; color: #6c7086; background: transparent;"
+        "font-size: 9pt; color: #585b70; background: transparent;"
     );
 
     m_versionEffect = new QGraphicsOpacityEffect(m_versionLabel);
@@ -114,8 +100,8 @@ void SplashScreen::setupUI()
     m_statusLabel = new QLabel(this);
     m_statusLabel->setAlignment(Qt::AlignCenter);
     m_statusLabel->setStyleSheet(
-        "font-size: 9pt; color: #6c7086; background: transparent; "
-        "padding-bottom: 6px;"
+        "font-size: 8pt; color: #585b70; background: transparent; "
+        "padding-bottom: 8px;"
     );
 
     m_statusEffect = new QGraphicsOpacityEffect(m_statusLabel);
@@ -129,17 +115,17 @@ void SplashScreen::setupUI()
     m_progressBar->setRange(0, 100);
     m_progressBar->setValue(0);
     m_progressBar->setTextVisible(false);
-    m_progressBar->setFixedHeight(4);
+    m_progressBar->setFixedHeight(3);
     m_progressBar->setStyleSheet(
         "QProgressBar {"
-        "  background-color: rgba(49, 50, 68, 180);"
+        "  background-color: rgba(49, 50, 68, 120);"
         "  border: none;"
-        "  border-radius: 2px;"
+        "  border-radius: 1px;"
         "}"
         "QProgressBar::chunk {"
         "  background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-        "    stop:0 #89b4fa, stop:0.5 #b4befe, stop:1 #89b4fa);"
-        "  border-radius: 2px;"
+        "    stop:0 #89b4fa, stop:0.5 #b4befe, stop:1 #cba6f7);"
+        "  border-radius: 1px;"
         "}"
     );
 
@@ -150,48 +136,159 @@ void SplashScreen::setupUI()
     layout->addWidget(m_progressBar);
 }
 
+// ===========================================
+// Программная отрисовка векторного логотипа
+// ===========================================
+
+void SplashScreen::drawLogo(QPainter& p, const QRectF& rect)
+{
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing, true);
+
+    QPointF center = rect.center();
+    qreal size = qMin(rect.width(), rect.height()) * 0.85;
+    qreal half = size / 2.0;
+
+    // === Фоновый круг с градиентом ===
+    QRadialGradient circleBg(center, half);
+    circleBg.setColorAt(0.0, QColor(137, 180, 250, 40));
+    circleBg.setColorAt(0.6, QColor(137, 180, 250, 15));
+    circleBg.setColorAt(1.0, QColor(137, 180, 250, 0));
+    p.setPen(Qt::NoPen);
+    p.setBrush(circleBg);
+    p.drawEllipse(center, half, half);
+
+    // === Основное кольцо ===
+    qreal ringRadius = half * 0.72;
+    qreal ringWidth = size * 0.045;
+
+    QPen ringPen(QColor(137, 180, 250, 200), ringWidth);
+    ringPen.setCapStyle(Qt::RoundCap);
+    p.setPen(ringPen);
+    p.setBrush(Qt::NoBrush);
+    p.drawEllipse(center, ringRadius, ringRadius);
+
+    // === Курсор-стрелка (стилизованная) ===
+    qreal cursorSize = size * 0.32;
+    QPointF cursorOrigin(center.x() - cursorSize * 0.1,
+                         center.y() - cursorSize * 0.15);
+
+    QPainterPath cursor;
+    cursor.moveTo(cursorOrigin);
+    cursor.lineTo(cursorOrigin.x(), cursorOrigin.y() + cursorSize);
+    cursor.lineTo(cursorOrigin.x() + cursorSize * 0.30, cursorOrigin.y() + cursorSize * 0.72);
+    cursor.lineTo(cursorOrigin.x() + cursorSize * 0.52, cursorOrigin.y() + cursorSize * 0.95);
+    cursor.lineTo(cursorOrigin.x() + cursorSize * 0.62, cursorOrigin.y() + cursorSize * 0.82);
+    cursor.lineTo(cursorOrigin.x() + cursorSize * 0.40, cursorOrigin.y() + cursorSize * 0.60);
+    cursor.lineTo(cursorOrigin.x() + cursorSize * 0.72, cursorOrigin.y() + cursorSize * 0.60);
+    cursor.closeSubpath();
+
+    QLinearGradient cursorGrad(cursorOrigin,
+                               QPointF(cursorOrigin.x() + cursorSize * 0.5,
+                                       cursorOrigin.y() + cursorSize));
+    cursorGrad.setColorAt(0.0, QColor(205, 214, 244));
+    cursorGrad.setColorAt(1.0, QColor(180, 190, 254));
+    p.setPen(Qt::NoPen);
+    p.setBrush(cursorGrad);
+    p.drawPath(cursor);
+
+    p.setPen(QPen(QColor(137, 180, 250, 120), 1.0));
+    p.setBrush(Qt::NoBrush);
+    p.drawPath(cursor);
+
+    // === Декоративные точки клика ===
+    auto drawClickDot = [&](qreal angle, qreal dist, qreal dotSize, int alpha) {
+        qreal rad = qDegreesToRadians(angle);
+        QPointF dotPos(center.x() + dist * qCos(rad),
+                       center.y() + dist * qSin(rad));
+        QRadialGradient dotGrad(dotPos, dotSize);
+        dotGrad.setColorAt(0.0, QColor(166, 227, 161, alpha));
+        dotGrad.setColorAt(1.0, QColor(166, 227, 161, 0));
+        p.setPen(Qt::NoPen);
+        p.setBrush(dotGrad);
+        p.drawEllipse(dotPos, dotSize, dotSize);
+
+        p.setBrush(QColor(166, 227, 161, alpha));
+        p.drawEllipse(dotPos, dotSize * 0.3, dotSize * 0.3);
+    };
+
+    drawClickDot(-45, ringRadius * 0.95, size * 0.06, 180);
+    drawClickDot(200, ringRadius * 0.85, size * 0.04, 130);
+    drawClickDot(90, ringRadius * 1.05, size * 0.035, 100);
+
+    p.restore();
+}
+
 void SplashScreen::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    p.setRenderHint(QPainter::SmoothPixmapTransform);
 
     QRectF r(0, 0, width(), height());
 
-    // === Glow effect (подсветка за окном) ===
+    // === Glow effect за окном ===
     if (m_glowRadius > 0) {
-        QRadialGradient glow(r.center(), m_glowRadius);
-        glow.setColorAt(0.0, QColor(137, 180, 250, 35));  // #89b4fa
-        glow.setColorAt(0.5, QColor(137, 180, 250, 12));
+        QRadialGradient glow(r.center().x(), r.height() * 0.35, m_glowRadius);
+        glow.setColorAt(0.0, QColor(137, 180, 250, 30));
+        glow.setColorAt(0.4, QColor(180, 190, 254, 10));
         glow.setColorAt(1.0, QColor(137, 180, 250, 0));
         p.fillRect(r, glow);
     }
 
     // === Основной фон — закруглённый прямоугольник ===
-    QRectF cardRect = r.adjusted(10, 10, -10, -10);
+    QRectF cardRect = r.adjusted(12, 12, -12, -12);
     QPainterPath path;
-    path.addRoundedRect(cardRect, 18, 18);
+    path.addRoundedRect(cardRect, 20, 20);
 
-    // Фон с прозрачностью
-    QColor bgColor(24, 24, 37);  // #181825
-    bgColor.setAlphaF(m_bgOpacity * 0.95);
+    // Фон
+    QColor bgColor(17, 17, 27);  // #11111b
+    bgColor.setAlphaF(m_bgOpacity * 0.97);
     p.fillPath(path, bgColor);
 
-    // Тонкая рамка
-    QColor borderColor(49, 50, 68);  // #313244
-    borderColor.setAlphaF(m_bgOpacity * 0.7);
-    p.setPen(QPen(borderColor, 1.0));
-    p.drawPath(path);
+    // Рамка с градиентом
+    if (m_bgOpacity > 0.1) {
+        QLinearGradient borderGrad(cardRect.topLeft(), cardRect.bottomRight());
+        QColor bc1(137, 180, 250, static_cast<int>(60 * m_bgOpacity));
+        QColor bc2(49, 50, 68, static_cast<int>(100 * m_bgOpacity));
+        borderGrad.setColorAt(0.0, bc1);
+        borderGrad.setColorAt(0.5, bc2);
+        borderGrad.setColorAt(1.0, bc1);
+        p.setPen(QPen(QBrush(borderGrad), 1.0));
+        p.setBrush(Qt::NoBrush);
+        p.drawPath(path);
+    }
 
     // Верхний акцентный градиент
     if (m_bgOpacity > 0.3) {
         QLinearGradient topGlow(cardRect.left(), cardRect.top(),
-                                cardRect.left(), cardRect.top() + 80);
-        topGlow.setColorAt(0.0, QColor(137, 180, 250, static_cast<int>(20 * m_bgOpacity)));
-        topGlow.setColorAt(1.0, QColor(137, 180, 250, 0));
+                                cardRect.left(), cardRect.top() + 120);
+        topGlow.setColorAt(0.0, QColor(137, 180, 250, static_cast<int>(18 * m_bgOpacity)));
+        topGlow.setColorAt(0.5, QColor(180, 190, 254, static_cast<int>(5 * m_bgOpacity)));
+        topGlow.setColorAt(1.0, QColor(0, 0, 0, 0));
 
         QPainterPath topPath;
-        topPath.addRoundedRect(cardRect.adjusted(0, 0, 0, -(cardRect.height() - 80)), 18, 18);
+        topPath.addRoundedRect(cardRect.adjusted(1, 1, -1, -(cardRect.height() - 120)), 19, 19);
         p.fillPath(topPath, topGlow);
+    }
+
+    // === Логотип (векторная отрисовка — всегда чёткий) ===
+    if (m_iconOpacity > 0.01) {
+        p.setOpacity(m_iconOpacity);
+
+        QRectF logoRect(r.center().x() - 50, 45, 100, 100);
+
+        if (m_iconScale < 1.0 || m_iconScale > 1.0) {
+            QPointF lc = logoRect.center();
+            p.translate(lc);
+            p.scale(m_iconScale, m_iconScale);
+            p.translate(-lc);
+        }
+
+        drawLogo(p, logoRect);
+
+        p.resetTransform();
+        p.setOpacity(1.0);
     }
 }
 
@@ -205,30 +302,37 @@ void SplashScreen::startAnimations()
 {
     m_mainSequence = new QSequentialAnimationGroup(this);
 
-    // === Фаза 1: фон появляется (400 мс) ===
+    // === Фаза 1: фон появляется (450 мс) ===
     auto* bgAnim = new QPropertyAnimation(this, "backgroundOpacity", this);
-    bgAnim->setDuration(400);
+    bgAnim->setDuration(450);
     bgAnim->setStartValue(0.0);
     bgAnim->setEndValue(1.0);
     bgAnim->setEasingCurve(QEasingCurve::OutCubic);
     m_mainSequence->addAnimation(bgAnim);
 
-    // === Фаза 2: glow + иконка (500 мс, параллельно) ===
+    // === Фаза 2: glow + логотип (550 мс, параллельно) ===
     auto* phase2 = new QParallelAnimationGroup(this);
 
     auto* glowAnim = new QPropertyAnimation(this, "glowRadius", this);
-    glowAnim->setDuration(600);
+    glowAnim->setDuration(650);
     glowAnim->setStartValue(0.0);
     glowAnim->setEndValue(static_cast<qreal>(width()));
     glowAnim->setEasingCurve(QEasingCurve::OutQuad);
     phase2->addAnimation(glowAnim);
 
-    auto* iconAnim = new QPropertyAnimation(m_iconEffect, "opacity", this);
-    iconAnim->setDuration(500);
-    iconAnim->setStartValue(0.0);
-    iconAnim->setEndValue(1.0);
-    iconAnim->setEasingCurve(QEasingCurve::OutCubic);
-    phase2->addAnimation(iconAnim);
+    auto* iconOpacAnim = new QPropertyAnimation(this, "iconOpacity", this);
+    iconOpacAnim->setDuration(550);
+    iconOpacAnim->setStartValue(0.0);
+    iconOpacAnim->setEndValue(1.0);
+    iconOpacAnim->setEasingCurve(QEasingCurve::OutCubic);
+    phase2->addAnimation(iconOpacAnim);
+
+    auto* iconScaleAnim = new QPropertyAnimation(this, "iconScale", this);
+    iconScaleAnim->setDuration(600);
+    iconScaleAnim->setStartValue(0.5);
+    iconScaleAnim->setEndValue(1.0);
+    iconScaleAnim->setEasingCurve(QEasingCurve::OutBack);
+    phase2->addAnimation(iconScaleAnim);
 
     m_mainSequence->addAnimation(phase2);
 
@@ -240,7 +344,7 @@ void SplashScreen::startAnimations()
     titleAnim->setEasingCurve(QEasingCurve::OutCubic);
     m_mainSequence->addAnimation(titleAnim);
 
-    // === Фаза 4: команда + версия + прогресс (300 мс, параллельно) ===
+    // === Фаза 4: команда + версия + прогресс (350 мс) ===
     auto* phase4 = new QParallelAnimationGroup(this);
 
     auto* teamAnim = new QPropertyAnimation(m_teamEffect, "opacity", this);
@@ -273,7 +377,6 @@ void SplashScreen::startAnimations()
 
     m_mainSequence->addAnimation(phase4);
 
-    // Запуск последовательности
     m_mainSequence->start();
 
     // === Прогресс-бар ===
@@ -286,7 +389,6 @@ void SplashScreen::startAnimations()
         m_progressValue += 2;
         m_progressBar->setValue(m_progressValue);
 
-        // Обновляем статусное сообщение
         int newIndex = (m_progressValue * m_statusMessages.size()) / 105;
         if (newIndex != m_statusIndex && newIndex < m_statusMessages.size()) {
             m_statusIndex = newIndex;
@@ -296,30 +398,39 @@ void SplashScreen::startAnimations()
         if (m_progressValue >= 100) {
             m_progressTimer->stop();
             m_statusLabel->setText(m_statusMessages.last());
-
-            // Задержка перед fadeOut
             QTimer::singleShot(400, this, &SplashScreen::fadeOut);
         }
     });
 
-    // Запускаем прогресс после начальных анимаций (~1600 мс)
-    QTimer::singleShot(1200, this, [this]() {
-        m_progressTimer->start(30); // ~1.5 сек на весь прогресс
+    QTimer::singleShot(1300, this, [this]() {
+        m_progressTimer->start(30);
     });
 }
 
 void SplashScreen::fadeOut()
 {
-    // Плавное исчезновение всего окна
+    auto* fadeGroup = new QParallelAnimationGroup(this);
+
     auto* fadeAnim = new QPropertyAnimation(this, "backgroundOpacity", this);
     fadeAnim->setDuration(500);
     fadeAnim->setStartValue(1.0);
     fadeAnim->setEndValue(0.0);
     fadeAnim->setEasingCurve(QEasingCurve::InCubic);
-
-    // Делаем все элементы тоже постепенно прозрачными
-    auto* fadeGroup = new QParallelAnimationGroup(this);
     fadeGroup->addAnimation(fadeAnim);
+
+    auto* iconFade = new QPropertyAnimation(this, "iconOpacity", this);
+    iconFade->setDuration(400);
+    iconFade->setStartValue(m_iconOpacity);
+    iconFade->setEndValue(0.0);
+    iconFade->setEasingCurve(QEasingCurve::InCubic);
+    fadeGroup->addAnimation(iconFade);
+
+    auto* iconScaleOut = new QPropertyAnimation(this, "iconScale", this);
+    iconScaleOut->setDuration(500);
+    iconScaleOut->setStartValue(m_iconScale);
+    iconScaleOut->setEndValue(1.15);
+    iconScaleOut->setEasingCurve(QEasingCurve::InCubic);
+    fadeGroup->addAnimation(iconScaleOut);
 
     auto addFade = [&](QGraphicsOpacityEffect* effect) {
         auto* a = new QPropertyAnimation(effect, "opacity", this);
@@ -330,14 +441,12 @@ void SplashScreen::fadeOut()
         fadeGroup->addAnimation(a);
     };
 
-    addFade(m_iconEffect);
     addFade(m_titleEffect);
     addFade(m_teamEffect);
     addFade(m_versionEffect);
     addFade(m_progressEffect);
     addFade(m_statusEffect);
 
-    // Glow shrink
     auto* glowFade = new QPropertyAnimation(this, "glowRadius", this);
     glowFade->setDuration(500);
     glowFade->setStartValue(m_glowRadius);
