@@ -8,6 +8,7 @@ QMainWindow, QWidget {
     color: #cdd6f4;
     font-family: "Segoe UI", sans-serif;
     font-size: 10pt;
+    outline: none;
 }
 
 /* Меню */
@@ -34,44 +35,51 @@ QMenu::item:selected {
 /* Вкладки */
 QTabWidget::pane {
     border: 1px solid #313244;
+    border-radius: 4px;
     background-color: #1e1e2e;
+    padding: 2px;
 }
 
 QTabBar::tab {
     background-color: #181825;
     color: #a6adc8;
-    padding: 8px 20px;
+    padding: 10px 22px;
     border: 1px solid #313244;
     border-bottom: none;
     margin-right: 2px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    font-weight: 500;
 }
 
 QTabBar::tab:selected {
     background-color: #1e1e2e;
     color: #cdd6f4;
     border-bottom: 2px solid #89b4fa;
+    font-weight: bold;
 }
 
 QTabBar::tab:hover:!selected {
     background-color: #313244;
+    color: #cdd6f4;
 }
 
 /* Группы */
 QGroupBox {
     border: 1px solid #313244;
-    border-radius: 6px;
-    margin-top: 12px;
-    padding-top: 16px;
+    border-radius: 8px;
+    margin-top: 14px;
+    padding: 20px 10px 10px 10px;
     color: #cdd6f4;
     font-weight: bold;
+    font-size: 10pt;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 12px;
-    padding: 0 6px;
+    left: 14px;
+    padding: 2px 8px;
+    color: #89b4fa;
 }
 
 /* Кнопки */
@@ -79,22 +87,32 @@ QPushButton {
     background-color: #45475a;
     color: #cdd6f4;
     border: 1px solid #585b70;
-    border-radius: 4px;
-    padding: 6px 16px;
-    min-height: 24px;
+    border-radius: 6px;
+    padding: 7px 18px;
+    min-height: 26px;
+    font-weight: 500;
 }
 
 QPushButton:hover {
     background-color: #585b70;
+    border-color: #6c7086;
 }
 
 QPushButton:pressed {
     background-color: #313244;
+    border-color: #45475a;
+    padding-top: 8px;
+    padding-bottom: 6px;
 }
 
 QPushButton:disabled {
     background-color: #313244;
     color: #585b70;
+    border-color: #45475a;
+}
+
+QPushButton:focus {
+    border: 1px solid #89b4fa;
 }
 
 /* Кнопка "Старт" — акцентная */
@@ -102,11 +120,19 @@ QPushButton#startButton {
     background-color: #a6e3a1;
     color: #1e1e2e;
     font-weight: bold;
+    font-size: 11pt;
     border: none;
+    border-radius: 8px;
 }
 
 QPushButton#startButton:hover {
     background-color: #94e2d5;
+}
+
+QPushButton#startButton:pressed {
+    background-color: #74c7a4;
+    padding-top: 8px;
+    padding-bottom: 6px;
 }
 
 /* Кнопка "Стоп" */
@@ -114,11 +140,19 @@ QPushButton#stopButton {
     background-color: #f38ba8;
     color: #1e1e2e;
     font-weight: bold;
+    font-size: 11pt;
     border: none;
+    border-radius: 8px;
 }
 
 QPushButton#stopButton:hover {
     background-color: #eba0ac;
+}
+
+QPushButton#stopButton:pressed {
+    background-color: #e06c88;
+    padding-top: 8px;
+    padding-bottom: 6px;
 }
 
 /* Поля ввода */
@@ -126,12 +160,30 @@ QLineEdit, QSpinBox, QDoubleSpinBox, QComboBox {
     background-color: #313244;
     color: #cdd6f4;
     border: 1px solid #45475a;
-    border-radius: 4px;
-    padding: 4px 8px;
-    min-height: 22px;
+    border-radius: 6px;
+    padding: 5px 10px;
+    min-height: 24px;
+    selection-background-color: #585b70;
 }
 
 QLineEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {
+    border: 1px solid #89b4fa;
+}
+
+QLineEdit:hover, QSpinBox:hover, QDoubleSpinBox:hover, QComboBox:hover {
+    border: 1px solid #585b70;
+}
+
+QDateTimeEdit {
+    background-color: #313244;
+    color: #cdd6f4;
+    border: 1px solid #45475a;
+    border-radius: 6px;
+    padding: 5px 10px;
+    min-height: 24px;
+}
+
+QDateTimeEdit:focus {
     border: 1px solid #89b4fa;
 }
 
@@ -285,15 +337,16 @@ QLabel {
 QProgressBar {
     background-color: #313244;
     border: 1px solid #45475a;
-    border-radius: 4px;
+    border-radius: 6px;
     text-align: center;
     color: #cdd6f4;
-    height: 18px;
+    height: 20px;
+    font-size: 8pt;
 }
 
 QProgressBar::chunk {
     background-color: #89b4fa;
-    border-radius: 3px;
+    border-radius: 5px;
 }
 
 /* Таблица */

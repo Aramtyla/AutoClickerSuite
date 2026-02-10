@@ -31,6 +31,7 @@
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QIcon>
+#include <QSize>
 #include <QInputDialog>
 #include <QLineEdit>
 #include <QStandardPaths>
@@ -93,6 +94,7 @@ void MainWindow::setupUI()
     m_tabWidget = new QTabWidget(m_splitter);
     m_tabWidget->setTabPosition(QTabWidget::North);
     m_tabWidget->setDocumentMode(true);
+    m_tabWidget->setIconSize(QSize(20, 20));
 
     // Создаём виджеты модулей
     m_mouseWidget    = new MouseWidget(m_tabWidget);

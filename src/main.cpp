@@ -8,6 +8,7 @@
 
 #include "app/MainWindow.h"
 #include "app/HotkeyManager.h"
+#include "app/SplashScreen.h"
 #include "utils/Logger.h"
 #include "utils/Constants.h"
 
@@ -35,12 +36,18 @@ int main(int argc, char* argv[])
 
     LOG_INFO("=== AutoClicker Suite стартует ===");
 
-    // Создаём главное окно
-    MainWindow mainWindow;
-    mainWindow.show();
+    // Показываем splash screen с анимацией
+    auto* splash = new SplashScreen();
 
-    // Регистрируем глобальные хоткеи по умолчанию
-    // (HotkeyManager уже создан внутри MainWindow)
+    // Создаём главное окно, но не показываем его сразу
+    MainWindow* mainWindow = new MainWindow();
+
+    // Когда splash завершится — показываем главное окно
+    QObject::connect(splash, &SplashScreen::finished, mainWindow, [mainWindow]() {
+        mainWindow->show();
+    });
+
+    splash->start();
 
     return app.exec();
 }

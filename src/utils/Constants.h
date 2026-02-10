@@ -72,10 +72,10 @@ namespace Paths {
 // Размеры GUI
 // ==========================================
 namespace UI {
-    inline constexpr int MAIN_WINDOW_WIDTH    = 750;
-    inline constexpr int MAIN_WINDOW_HEIGHT   = 550;
-    inline constexpr int MIN_WINDOW_WIDTH     = 600;
-    inline constexpr int MIN_WINDOW_HEIGHT    = 400;
+    inline constexpr int MAIN_WINDOW_WIDTH    = 800;
+    inline constexpr int MAIN_WINDOW_HEIGHT   = 580;
+    inline constexpr int MIN_WINDOW_WIDTH     = 650;
+    inline constexpr int MIN_WINDOW_HEIGHT    = 440;
     inline constexpr int LOG_MAX_LINES        = 5000;    // Макс. строк в логе
 }
 

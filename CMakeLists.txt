@@ -89,6 +89,7 @@ set(APP_SOURCES
     src/app/LanguageManager.cpp
     src/app/ProfileManager.cpp
     src/app/SettingsWidget.cpp
+    src/app/SplashScreen.cpp
 )
 set(APP_HEADERS
     src/app/MainWindow.h
@@ -98,6 +99,7 @@ set(APP_HEADERS
     src/app/LanguageManager.h
     src/app/ProfileManager.h
     src/app/SettingsWidget.h
+    src/app/SplashScreen.h
 )
 
 # Модуль мыши
